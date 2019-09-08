@@ -16,6 +16,7 @@
         </ul>
       </div>
       <div class="right" ref="right">
+        <div class="flash" v-if="isRefresh"></div>
         <ul>
           <li v-for="item of right" class="right-item right-item-hook">
             <h2>{{item.name}}</h2>
@@ -69,7 +70,12 @@ export default {
       ],
       listHeight: [],
       scrollY: 0, // 实时获取当前Y轴的高度
-      clickEvent: false
+      clickEvent: false,
+
+      /**
+       * 下拉刷新中
+       */
+      isRefresh: false
     };
   },
   methods: {
@@ -83,6 +89,34 @@ export default {
       this.rights.on("scroll", pos => {
         this.scrollY = Math.abs(Math.round(pos.y));
       });
+      // 下拉开始
+      this.rights.on("touchStart", pos => {
+        // 下拉动作
+        if (pos.y > 1) {
+          // this.$emit("pulldown", 1);
+          this.isRefresh = true;
+        }
+        // setTimeout(() => {
+        //   this.rights.finishPullUp();
+        //   this.rights.refresh();
+        //   this.isRefresh = false
+        // }, 1000);
+      });
+      // 顶部下拉事件，用于下拉刷新
+      // if (this.pulldown) {
+      this.rights.on("touchEnd", pos => {
+        // 下拉动作
+        if (pos.y > 1) {
+          // this.$emit("pulldown", 1);
+          this.isRefresh = true;
+        }
+        setTimeout(() => {
+          this.rights.finishPullUp();
+          this.rights.refresh();
+          this.isRefresh = false;
+        }, 2000);
+      });
+      // }
     },
     _getHeight() {
       let rightItems = this.$refs.right.getElementsByClassName(
@@ -125,7 +159,7 @@ export default {
           // if (this.clickEvent) {
           //   return i + 1;
           // } else {
-            return i;
+          return i;
           // }
         }
       }
@@ -203,5 +237,25 @@ body {
   line-height: 100px;
   text-align: center;
   border-bottom: 1px solid yellow;
+}
+
+/* 刷新加载页面 */
+.flash {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 2px solid pink;
+  animation: run 1s infinite;
+  position: absolute;
+  left: -10%;
+  z-index: 100;
+}
+@keyframes run {
+  0% {
+    left: -10%;
+  }
+  100% {
+    left: 120%;
+  }
 }
 </style>
